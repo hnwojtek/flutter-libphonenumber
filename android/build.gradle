@@ -6,6 +6,13 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // 🧠 Enforce Java 17 globally across all subprojects (important for `--release`)
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        options.compilerArgs += ["--release", "17"]
+    }
 }
 
 rootProject.buildDir = '../build'
@@ -18,7 +25,7 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.mathrawk.libphonenumber'
-    compileSdkVersion 34
+    compileSdkVersion 36
 
     defaultConfig {
         minSdkVersion 21
@@ -27,7 +34,6 @@ android {
     }
 
     compileOptions {
-        // Enable Java 17
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -39,11 +45,6 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
-}
-
-// 🧠 This ensures the Java compiler actually targets Java 17 (even when Gradle uses older defaults)
-tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs += ["--release", "17"]
 }
 
 dependencies {
