@@ -161,46 +161,21 @@ public class LibphonenumberPlugin implements FlutterPlugin, MethodCallHandler {
     Phonenumber.PhoneNumber p = phoneUtil.parse(phoneNumber, isoCode.toUpperCase());
     PhoneNumberUtil.PhoneNumberType t = phoneUtil.getNumberType(p);
 
-    int typeCode;
-    switch (t) {
-      case FIXED_LINE:
-        typeCode = 0;
-        break;
-      case MOBILE:
-        typeCode = 1;
-        break;
-      case FIXED_LINE_OR_MOBILE:
-        typeCode = 2;
-        break;
-      case TOLL_FREE:
-        typeCode = 3;
-        break;
-      case PREMIUM_RATE:
-        typeCode = 4;
-        break;
-      case SHARED_COST:
-        typeCode = 5;
-        break;
-      case VOIP:
-        typeCode = 6;
-        break;
-      case PERSONAL_NUMBER:
-        typeCode = 7;
-        break;
-      case PAGER:
-        typeCode = 8;
-        break;
-      case UAN:
-        typeCode = 9;
-        break;
-      case VOICEMAIL:
-        typeCode = 10;
-        break;
-      case UNKNOWN:
-      default:
-        typeCode = -1;
-        break;
-    }
+    // 🔁 Java 14+ switch expression
+    int typeCode = switch (t) {
+      case FIXED_LINE           -> 0;
+      case MOBILE               -> 1;
+      case FIXED_LINE_OR_MOBILE-> 2;
+      case TOLL_FREE            -> 3;
+      case PREMIUM_RATE         -> 4;
+      case SHARED_COST          -> 5;
+      case VOIP                 -> 6;
+      case PERSONAL_NUMBER      -> 7;
+      case PAGER                -> 8;
+      case UAN                  -> 9;
+      case VOICEMAIL            -> 10;
+      case UNKNOWN              -> -1;
+    };
 
     result.success(typeCode);
   } catch (NumberParseException e) {
