@@ -7,7 +7,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 import com.google.i18n.phonenumbers.AsYouTypeFormatter;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -19,29 +18,27 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-/** LibphonenumberPlugin */
-public class LibphonenumberPlugin implements MethodCallHandler, FlutterPlugin {
-  private static PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
-  private static PhoneNumberToCarrierMapper phoneNumberToCarrierMapper = PhoneNumberToCarrierMapper.getInstance();
+public class LibphonenumberPlugin implements FlutterPlugin, MethodCallHandler {
+  private MethodChannel channel;
+  private static final PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+  private static final PhoneNumberToCarrierMapper phoneNumberToCarrierMapper = PhoneNumberToCarrierMapper.getInstance();
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-    final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "codeheadlabs.com/libphonenumber");
-    channel.setMethodCallHandler(new LibphonenumberPlugin());
+    channel = new MethodChannel(binding.getBinaryMessenger(), "codeheadlabs.com/libphonenumber");
+    channel.setMethodCallHandler(this);
   }
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-  }
-
-  /** Keeping around to support older apps that aren't using v2 Android embedding */
-  public static void registerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), "codeheadlabs.com/libphonenumber");
-    channel.setMethodCallHandler(new LibphonenumberPlugin());
+    if (channel != null) {
+      channel.setMethodCallHandler(null);
+      channel = null;
+    }
   }
 
   @Override
-  public void onMethodCall(MethodCall call, Result result) {
+  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     switch (call.method) {
       case "isValidPhoneNumber":
         handleIsValidPhoneNumber(call, result);
@@ -134,7 +131,7 @@ public class LibphonenumberPlugin implements MethodCallHandler, FlutterPlugin {
       String countryCode = String.valueOf(p.getCountryCode());
       String formattedNumber = phoneUtil.format(p, PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
 
-      Map<String, String> resultMap = new HashMap<String, String>();
+      Map<String, String> resultMap = new HashMap<>();
       resultMap.put("isoCode", regionCode);
       resultMap.put("regionCode", countryCode);
       resultMap.put("formattedPhoneNumber", formattedNumber);
@@ -150,11 +147,10 @@ public class LibphonenumberPlugin implements MethodCallHandler, FlutterPlugin {
     String regionCode = phoneUtil.getRegionCodeForNumber(p);
     String formattedNumber = phoneUtil.format(p, PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
 
-    Map<String, String> resultMap = new HashMap<String, String>();
+    Map<String, String> resultMap = new HashMap<>();
     resultMap.put("isoCode", regionCode);
     resultMap.put("formattedPhoneNumber", formattedNumber);
     result.success(resultMap);
-
   }
 
   private void handleGetNumberType(MethodCall call, Result result) {
@@ -165,49 +161,27 @@ public class LibphonenumberPlugin implements MethodCallHandler, FlutterPlugin {
       Phonenumber.PhoneNumber p = phoneUtil.parse(phoneNumber, isoCode.toUpperCase());
       PhoneNumberUtil.PhoneNumberType t = phoneUtil.getNumberType(p);
 
-      switch (t) {
-        case FIXED_LINE:
-          result.success(0);
-          break;
-        case MOBILE:
-          result.success(1);
-          break;
-        case FIXED_LINE_OR_MOBILE:
-          result.success(2);
-          break;
-        case TOLL_FREE:
-          result.success(3);
-          break;
-        case PREMIUM_RATE:
-          result.success(4);
-          break;
-        case SHARED_COST:
-          result.success(5);
-          break;
-        case VOIP:
-          result.success(6);
-          break;
-        case PERSONAL_NUMBER:
-          result.success(7);
-          break;
-        case PAGER:
-          result.success(8);
-          break;
-        case UAN:
-          result.success(9);
-          break;
-        case VOICEMAIL:
-          result.success(10);
-          break;
-        case UNKNOWN:
-          result.success(-1);
-          break;
-      }
+      int typeCode = switch (t) {
+        case FIXED_LINE -> 0;
+        case MOBILE -> 1;
+        case FIXED_LINE_OR_MOBILE -> 2;
+        case TOLL_FREE -> 3;
+        case PREMIUM_RATE -> 4;
+        case SHARED_COST -> 5;
+        case VOIP -> 6;
+        case PERSONAL_NUMBER -> 7;
+        case PAGER -> 8;
+        case UAN -> 9;
+        case VOICEMAIL -> 10;
+        case UNKNOWN -> -1;
+      };
+
+      result.success(typeCode);
     } catch (NumberParseException e) {
       result.error("NumberParseException", e.getMessage(), null);
     }
   }
-  
+
   private void formatAsYouType(MethodCall call, Result result) {
     final String phoneNumber = call.argument("phone_number");
     final String isoCode = call.argument("iso_code");
