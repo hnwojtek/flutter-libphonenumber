@@ -1,7 +1,11 @@
 name: libphonenumber
-description: This is a Flutter implementation of libphonenumber. It includes only a few features at the moment, and are added when more functionality is desired.
+description: A Flutter implementation of libphonenumber. Includes core functionality for number parsing, formatting, and validation.
 version: 3.0.0
-homepage: https://github.com/emostar/flutter-libphonenumber
+homepage: https://github.com/hnwojtek/flutter-libphonenumber
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
@@ -16,7 +20,3 @@ flutter:
         pluginClass: LibphonenumberPlugin
       ios:
         pluginClass: LibphonenumberPlugin
-
-environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.0.0"
