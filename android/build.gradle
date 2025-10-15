@@ -17,7 +17,7 @@ subprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 36
     namespace 'com.mathrawk.libphonenumber'
 
     defaultConfig {
